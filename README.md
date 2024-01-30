@@ -12,7 +12,7 @@
 [coverage-image]: https://3tjjj5abqi.execute-api.us-east-1.amazonaws.com/prod/node-unzipper/badge
 [coverage-url]: https://3tjjj5abqi.execute-api.us-east-1.amazonaws.com/prod/node-unzipper/url
 
-# wistroni40-unzipper
+# unzipper-faster
 
 這是從原始[node-unzipper](https://github.com/ZJONSSON/node-unzipper)fock 出來，修正解壓縮速度過慢的問題。
 
@@ -47,8 +47,8 @@ $ npm install unzipper
 ### Extract to a directory
 
 ```js
-fs.createReadStream('path/to/archive.zip').pipe(
-  unzipper.Extract({ path: 'output/path' })
+fs.createReadStream("path/to/archive.zip").pipe(
+  unzipper.Extract({ path: "output/path" })
 );
 ```
 
@@ -72,14 +72,14 @@ entry.autodrain().on('error' => handleError);
 Here is a quick example:
 
 ```js
-fs.createReadStream('path/to/archive.zip')
+fs.createReadStream("path/to/archive.zip")
   .pipe(unzipper.Parse())
-  .on('entry', function (entry) {
+  .on("entry", function (entry) {
     const fileName = entry.path;
     const type = entry.type; // 'Directory' or 'File'
     const size = entry.vars.uncompressedSize; // There is also compressedSize;
     if (fileName === "this IS the file I'm looking for") {
-      entry.pipe(fs.createWriteStream('output/path'));
+      entry.pipe(fs.createWriteStream("output/path"));
     } else {
       entry.autodrain();
     }
@@ -90,14 +90,14 @@ and the same example using async iterators:
 
 ```js
 const zip = fs
-  .createReadStream('path/to/archive.zip')
+  .createReadStream("path/to/archive.zip")
   .pipe(unzipper.Parse({ forceStream: true }));
 for await (const entry of zip) {
   const fileName = entry.path;
   const type = entry.type; // 'Directory' or 'File'
   const size = entry.vars.uncompressedSize; // There is also compressedSize;
   if (fileName === "this IS the file I'm looking for") {
-    entry.pipe(fs.createWriteStream('output/path'));
+    entry.pipe(fs.createWriteStream("output/path"));
   } else {
     entry.autodrain();
   }
@@ -134,12 +134,12 @@ fs.createReadStream('path/to/archive.zip')
 Example using [etl](https://www.npmjs.com/package/etl):
 
 ```js
-fs.createReadStream('path/to/archive.zip')
+fs.createReadStream("path/to/archive.zip")
   .pipe(unzipper.Parse())
   .pipe(
     etl.map((entry) => {
       if (entry.path == "this IS the file I'm looking for")
-        return entry.pipe(etl.toFile('output/path')).promise();
+        return entry.pipe(etl.toFile("output/path")).promise();
       else entry.autodrain();
     })
   );
@@ -152,9 +152,9 @@ fs.createReadStream('path/to/archive.zip')
 Example:
 
 ```js
-fs.createReadStream('path/to/archive.zip')
+fs.createReadStream("path/to/archive.zip")
   .pipe(unzipper.ParseOne())
-  .pipe(fs.createWriteStream('firstFile.txt'));
+  .pipe(fs.createWriteStream("firstFile.txt"));
 ```
 
 ### Buffering the content of an entry into memory
@@ -162,13 +162,13 @@ fs.createReadStream('path/to/archive.zip')
 While the recommended strategy of consuming the unzipped contents is using streams, it is sometimes convenient to be able to get the full buffered contents of each file . Each `entry` provides a `.buffer` function that consumes the entry by buffering the contents into memory and returning a promise to the complete buffer.
 
 ```js
-fs.createReadStream('path/to/archive.zip')
+fs.createReadStream("path/to/archive.zip")
   .pipe(unzipper.Parse())
   .pipe(
     etl.map(async (entry) => {
       if (entry.path == "this IS the file I'm looking for") {
         const content = await entry.buffer();
-        await fs.writeFile('output/path', content);
+        await fs.writeFile("output/path", content);
       } else {
         entry.autodrain();
       }
@@ -183,13 +183,13 @@ The parser emits `finish` and `error` events like any other stream. The parser a
 Example:
 
 ```js
-fs.createReadStream('path/to/archive.zip')
+fs.createReadStream("path/to/archive.zip")
   .pipe(unzipper.Parse())
-  .on('entry', (entry) => entry.autodrain())
+  .on("entry", (entry) => entry.autodrain())
   .promise()
   .then(
-    () => console.log('done'),
-    (e) => console.log('error', e)
+    () => console.log("done"),
+    (e) => console.log("error", e)
   );
 ```
 
@@ -199,19 +199,19 @@ Archives created by legacy tools usually have filenames encoded with IBM PC (Win
 You can decode filenames with preferred character set:
 
 ```js
-const il = require('iconv-lite');
-fs.createReadStream('path/to/archive.zip')
+const il = require("iconv-lite");
+fs.createReadStream("path/to/archive.zip")
   .pipe(unzipper.Parse())
-  .on('entry', function (entry) {
+  .on("entry", function (entry) {
     // if some legacy zip tool follow ZIP spec then this flag will be set
     const isUnicode = entry.props.flags.isUnicode;
     // decode "non-unicode" filename from OEM Cyrillic character set
     const fileName = isUnicode
       ? entry.path
-      : il.decode(entry.props.pathBuffer, 'cp866');
+      : il.decode(entry.props.pathBuffer, "cp866");
     const type = entry.type; // 'Directory' or 'File'
     const size = entry.vars.uncompressedSize; // There is also compressedSize;
-    if (fileName === 'Текстовый файл.txt') {
+    if (fileName === "Текстовый файл.txt") {
       entry.pipe(fs.createWriteStream(fileName));
     } else {
       entry.autodrain();
@@ -238,14 +238,14 @@ Example:
 
 ```js
 async function main() {
-  const directory = await unzipper.Open.file('path/to/archive.zip');
-  console.log('directory', directory);
+  const directory = await unzipper.Open.file("path/to/archive.zip");
+  console.log("directory", directory);
   return new Promise((resolve, reject) => {
     directory.files[0]
       .stream()
-      .pipe(fs.createWriteStream('firstFile'))
-      .on('error', reject)
-      .on('finish', resolve);
+      .pipe(fs.createWriteStream("firstFile"))
+      .on("error", reject)
+      .on("finish", resolve);
   });
 }
 
@@ -259,16 +259,16 @@ This function will return a Promise to the central directory information from a 
 Live Example: (extracts a tiny xml file from the middle of a 500MB zipfile)
 
 ```js
-const request = require('request');
-const unzipper = require('./unzip');
+const request = require("request");
+const unzipper = require("./unzip");
 
 async function main() {
   const directory = await unzipper.Open.url(
     request,
-    'http://www2.census.gov/geo/tiger/TIGER2015/ZCTA5/tl_2015_us_zcta510.zip'
+    "http://www2.census.gov/geo/tiger/TIGER2015/ZCTA5/tl_2015_us_zcta510.zip"
   );
   const file = directory.files.find(
-    (d) => d.path === 'tl_2015_us_zcta510.shp.iso.xml'
+    (d) => d.path === "tl_2015_us_zcta510.shp.iso.xml"
   );
   const content = await file.buffer();
   console.log(content.toString());
@@ -306,21 +306,21 @@ This function will return a Promise to the central directory information from a 
 Example:
 
 ```js
-const unzipper = require('./unzip');
-const AWS = require('aws-sdk');
+const unzipper = require("./unzip");
+const AWS = require("aws-sdk");
 const s3Client = AWS.S3(config);
 
 async function main() {
   const directory = await unzipper.Open.s3(s3Client, {
-    Bucket: 'unzipper',
-    Key: 'archive.zip',
+    Bucket: "unzipper",
+    Key: "archive.zip",
   });
   return new Promise((resolve, reject) => {
     directory.files[0]
       .stream()
-      .pipe(fs.createWriteStream('firstFile'))
-      .on('error', reject)
-      .on('finish', resolve);
+      .pipe(fs.createWriteStream("firstFile"))
+      .on("error", reject)
+      .on("finish", resolve);
   });
 }
 
@@ -335,11 +335,11 @@ Example:
 
 ```js
 // never use readFileSync - only used here to simplify the example
-const buffer = fs.readFileSync('path/to/arhive.zip');
+const buffer = fs.readFileSync("path/to/arhive.zip");
 
 async function main() {
   const directory = await unzipper.Open.buffer(buffer);
-  console.log('directory', directory);
+  console.log("directory", directory);
   // ...
 }
 
@@ -354,12 +354,12 @@ Example:
 
 ```js
 // Custom source implementation for reading a zip file from Google Cloud Storage
-const { Storage } = require('@google-cloud/storage');
+const { Storage } = require("@google-cloud/storage");
 
 async function main() {
   const storage = new Storage();
-  const bucket = storage.bucket('my-bucket');
-  const zipFile = bucket.file('my-zip-file.zip');
+  const bucket = storage.bucket("my-bucket");
+  const zipFile = bucket.file("my-zip-file.zip");
 
   const customSource = {
     stream: function (offset, length) {
@@ -375,7 +375,7 @@ async function main() {
   };
 
   const directory = await unzipper.Open.custom(customSource);
-  console.log('directory', directory);
+  console.log("directory", directory);
   // ...
 }
 
@@ -389,8 +389,8 @@ The directory object returned from `Open.[method]` provides an `extract` method 
 Example (with concurrency of 5):
 
 ```js
-unzip.Open.file('path/to/archive.zip').then((d) =>
-  d.extract({ path: '/extraction/path', concurrency: 5 })
+unzip.Open.file("path/to/archive.zip").then((d) =>
+  d.extract({ path: "/extraction/path", concurrency: 5 })
 );
 ```
 
