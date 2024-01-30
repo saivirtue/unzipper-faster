@@ -23,7 +23,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ZJONSSON/node-unzipper.git"
+    "url": "git+https://github.com/ZJONSSON/node-unzipper.git"
   },
   "license": "MIT",
   "dependencies": {
